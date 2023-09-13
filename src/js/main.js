@@ -65,9 +65,9 @@ function init() {
   
   document.querySelector('.sorting.tie.button').addEventListener('click', () => pick('tie'));
   document.querySelector('.sorting.undo.button').addEventListener('click', undo);
-  document.querySelector('.sorting.save.button').addEventListener('click', () => saveProgress('Progress'));
+  document.querySelector('.sorting.save.button').addEventListener('click', () => saveProgress('진행 중'));
   
-  document.querySelector('.finished.save.button').addEventListener('click', () => saveProgress('Last Result'));
+  document.querySelector('.finished.save.button').addEventListener('click', () => saveProgress('최종 결과'));
   document.querySelector('.finished.getimg.button').addEventListener('click', generateImage);
   document.querySelector('.finished.list.button').addEventListener('click', generateTextList);
 
@@ -78,7 +78,7 @@ function init() {
     /** If sorting is in progress. */
     if (timestamp && !timeTaken && !loading && choices.length === battleNo - 1) {
       switch(ev.key) {
-        case 's': case '3':                   saveProgress('Progress'); break;
+        case 's': case '3':                   saveProgress('진행 중'); break;
         case 'h': case 'ArrowLeft':           pick('left'); break;
         case 'l': case 'ArrowRight':          pick('right'); break;
         case 'k': case '1': case 'ArrowUp':   pick('tie'); break;
@@ -89,7 +89,7 @@ function init() {
     /** If sorting has ended. */
     else if (timeTaken && choices.length === battleNo - 1) {
       switch(ev.key) {
-        case 'k': case '1': saveProgress('Last Result'); break;
+        case 'k': case '1': saveProgress('최종 결과'); break;
         case 'j': case '2': generateImage(); break;
         case 's': case '3': generateTextList(); break;
         default: break;
@@ -194,7 +194,7 @@ function start() {
   });
 
   if (characterDataToSort.length < 2) {
-    alert('Cannot sort with less than two characters. Please reselect.');
+    alert('2개 미만의 캐릭터로 순위를 매길 수 없습니다. 옵션을 확인해주세요.');
     return;
   }
 
@@ -305,7 +305,7 @@ function display() {
       case 2: pick('tie'); break;
       default: break;
     }
-  } else { saveProgress('Autosave'); }
+  } else { saveProgress('자동저장'); }
 }
 
 /**
@@ -479,7 +479,7 @@ function result(imageNum = 5) {
   document.querySelector('.info').style.display = 'none';
 
   const header = '<div class="result head"><div class="left">#</div><div class="right">Name</div></div>';
-  const timeStr = `This sorter was completed on ${new Date(timestamp + timeTaken).toString()} and took ${msToReadableTime(timeTaken)}. <br><br> <a class="restart-button" href="${location.protocol}//${sorterURL}">Do another sorter</a>`;
+  const timeStr = `월드컵 종료: ${new Date(timestamp + timeTaken).toString()} <br>걸린 시간: ${msToReadableTime(timeTaken)}. <br><br> <a class="restart-button" href="${location.protocol}//${sorterURL}">다시 하기</a>`;
   const imgRes = (char, num) => {
     const charName = reduceTextWidth(char.name, 'Arial 12px', 160);
     const charTooltip = char.name !== charName ? char.name : '';
@@ -548,7 +548,7 @@ function undo() {
 /** 
  * Save progress to local browser storage.
  * 
- * @param {'Autosave'|'Progress'|'Last Result'} saveType
+ * @param {'자동저장'|'진행 중'|'최종 결과'} saveType
 */
 function saveProgress(saveType) {
   const saveData = generateSavedata();
@@ -556,12 +556,12 @@ function saveProgress(saveType) {
   localStorage.setItem(`${sorterURL}_saveData`, saveData);
   localStorage.setItem(`${sorterURL}_saveType`, saveType);
 
-  if (saveType !== 'Autosave') {
+  if (saveType !== '자동저장') {
     const saveURL = `${location.protocol}//${sorterURL}?${saveData}`;
-    const inProgressText = 'You may click Load Progress after this to resume, or use this URL.';
-    const finishedText = 'You may use this URL to share this result, or click Load Last Result to view it again.';
+    const inProgressText = '아래 URL을 이용하거나 불러오기 버튼을 이용하여 진행 과정을 불러올 수 있습니다.';
+    const finishedText = '아래 URL을 이용하여 결과를 공유하거나, 불러오기 버튼을 이용하여 다시 결과를 보실 수 있습니다.';
 
-    window.prompt(saveType === 'Last Result' ? finishedText : inProgressText, saveURL);
+    window.prompt(saveType === '최종 결과' ? finishedText : inProgressText, saveURL);
   }
 }
 
@@ -599,12 +599,12 @@ function generateImage() {
 
     imgButton.removeEventListener('click', generateImage);
     imgButton.innerHTML = '';
-    imgButton.insertAdjacentHTML('beforeend', `<a href="${dataURL}" download="${filename}">Download Image</a><br><br>`);
+    imgButton.insertAdjacentHTML('beforeend', `<a href="${dataURL}" download="${filename}">이미지 다운로드</a><br><br>`);
 
     resetButton.insertAdjacentText('beforeend', 'Reset');
     resetButton.addEventListener('click', (event) => {
       imgButton.addEventListener('click', generateImage);
-      imgButton.innerHTML = 'Generate Image';
+      imgButton.innerHTML = '이미지 생성';
       event.stopPropagation();
     });
     imgButton.insertAdjacentElement('beforeend', resetButton);
@@ -752,7 +752,7 @@ function decodeQuery(queryString = window.location.search.slice(1)) {
 
     successfulLoad = true;
   } catch (err) {
-    console.error(`Error loading shareable link: ${err}`);
+    console.error(`오류 발생: ${err}`);
     setLatestDataset(); // Restore to default function if loading link does not work.
   }
 
@@ -771,7 +771,7 @@ function preloadImages() {
     return new Promise((res, rej) => {
       const reader = new FileReader();
       reader.onload = ev => {
-        progressBar(`Loading Image ${++imagesLoaded}`, Math.floor(imagesLoaded * 100 / totalLength));
+        progressBar(`이미지 불러오는 중: ${++imagesLoaded}`, Math.floor(imagesLoaded * 100 / totalLength));
         res(ev.target.result);
       };
       reader.onerror = rej;
@@ -802,12 +802,12 @@ function msToReadableTime (milliseconds) {
   const minutes = Math.floor(t / 60);
   t = t - (minutes * 60);
   const content = [];
-	if (years) content.push(years + " year" + (years > 1 ? "s" : ""));
-	if (months) content.push(months + " month" + (months > 1 ? "s" : ""));
-	if (days) content.push(days + " day" + (days > 1 ? "s" : ""));
-	if (hours) content.push(hours + " hour"  + (hours > 1 ? "s" : ""));
-	if (minutes) content.push(minutes + " minute" + (minutes > 1 ? "s" : ""));
-	if (t) content.push(t + " second" + (t > 1 ? "s" : ""));
+	if (years) content.push(years + " 년");
+	if (months) content.push(months + " 월");
+	if (days) content.push(days + " 일");
+	if (hours) content.push(hours + " 시");
+	if (minutes) content.push(minutes + " 분");
+	if (t) content.push(t + " 초");
   return content.slice(0,3).join(', ');
 }
 
